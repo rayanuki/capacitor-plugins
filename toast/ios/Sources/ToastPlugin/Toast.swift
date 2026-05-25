@@ -1,10 +1,25 @@
 import Foundation
 import UIKit
 
+extension UIApplication {
+    var topWindow: UIWindow? {
+        if #available(iOS 15.0, *){
+            return connectedScenes
+                .compactMap { $0 as? UIWindowScene }
+                .flatMap{ $0.windows }
+                .first{ $0.isKeyWindow }
+        }else{
+            return keyWindow
+        }
+    }
+}
+
 @objc public class Toast: NSObject {
 
     @objc public static func showToast(in viewController: UIViewController, text: String, duration: Int = 2000, position: String = "bottom", completion: ((Bool) -> Void)? = nil) {
         DispatchQueue.main.async {
+            guard let window = UIApplication.shared.topWindow else { return }
+
             let maxSizeTitle: CGSize = CGSize(width: viewController.view.bounds.size.width-32, height: viewController.view.bounds.size.height)
 
             let label = ToastLabel()
@@ -42,7 +57,8 @@ import UIKit
 
             label.padding = UIEdgeInsets(top: 8, left: 8, bottom: 8, right: 8)
 
-            viewController.view.addSubview(label)
+            // viewController.view.addSubview(label)
+            window.addSubview(label);
 
             UIView.animateKeyframes(withDuration: 0.3, delay: 0, animations: {
                 label.alpha = 1.0
